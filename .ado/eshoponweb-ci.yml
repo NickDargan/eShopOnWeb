@@ -48,8 +48,30 @@ stages:
         artifactName: Website
     
     - task: PublishBuildArtifacts@1
+- task: DownloadBuildArtifacts@1
+  inputs:
+    buildType: 'current'
+    downloadType: 'single'
+    artifactName: 'Website'
+    downloadPath: '$(Build.ArtifactsStagingDirectory)'
       displayName: Publish Artifacts ADO - Bicep
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)/.azure/bicep/webapp.bicep'
         ArtifactName: 'Bicep'
         publishLocation: 'Container'
+
+- stage: Deploy
+  displayName: Deploy to an Azure Web App
+    jobs:
+      - job: Deploy
+          pool:
+                vmImage: 'windows-2019'
+                    steps:
+
+                    - task: AzureRmWebAppDeployment@4
+                      inputs:
+                        ConnectionType: 'AzureRM'
+                        azureSubscription: 'Azure Pass - Sponsorship(6db8b192-2f08-4e6d-9ecd-bc8353ca1303)'
+                        appType: 'webApp'
+                        WebAppName: '$(Build.ArtifactStagingDirectory)/**/Web.zip'
+                        packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'   
